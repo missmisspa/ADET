@@ -1,0 +1,5 @@
+conn - establishes connection to phpMyAdmin and the MySQL database server
+index - retrieves and displays records in the database by using select statement
+update - modifies specific fields of a record by using update statement and where to filter out other records
+delete - deletes a specific record in the database
+create - create a new record by using insert into statement
