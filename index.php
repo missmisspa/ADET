@@ -1,8 +1,13 @@
 <?php
 require 'conn.php';
 
+// Fetch data with error handling
 $sql = "SELECT * FROM results";
 $result = mysqli_query($conn, $sql);
+
+if (!$result) {
+    die("<div class='alert alert-danger text-center'>Error fetching data: " . mysqli_error($conn) . "</div>");
+}
 ?>
 
 <!DOCTYPE html>
@@ -51,16 +56,14 @@ $result = mysqli_query($conn, $sql);
                         <input type="text" name="lname" class="form-control" placeholder="Last Name" required>
                     </div>
                     <div class="col-md-2">
-                        <input type="number" name="marks" class="form-control" placeholder="Marks" required>
+                    <input type="number" name="marks" class="form-control" placeholder="Marks" min="75" max="100" required>
                     </div>
                     <div class="col-md-2">
                         <select name="grade" class="form-select" required>
                             <option value="" selected disabled>Grade Level</option>
-                            <?php
-                            for ($i = 1; $i <= 12; $i++) {
-                                echo "<option value='$i'>Grade $i</option>";
-                            }
-                            ?>
+                            <?php for ($i = 1; $i <= 12; $i++) { ?>
+                                <option value="<?= $i ?>">Grade <?= $i ?></option>
+                            <?php } ?>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -85,26 +88,40 @@ $result = mysqli_query($conn, $sql);
                 </tr>
             </thead>
             <tbody>
-                <?php
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>
-                        <td>{$row['id']}</td>
-                        <td>{$row['fname']}</td>
-                        <td>{$row['lname']}</td>
-                        <td>{$row['marks']}</td>
-                        <td>Grade {$row['grade']}</td>
-                        <td><button class='btn btn-warning btn-sm' data-bs-toggle='modal' data-bs-target='#editModal' 
-                        data-id='{$row['id']}' data-fname='{$row['fname']}' data-lname='{$row['lname']}' 
-                        data-marks='{$row['marks']}' data-grade='{$row['grade']}'>Edit</button></td>
-                        <td><a href='delete.php?id={$row['id']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure?\")'>Delete</a></td>
-                    </tr>";
-                }
-                ?>
+                <?php if (mysqli_num_rows($result) > 0): ?>
+                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                        <tr>
+                            <td><?= $row['id'] ?></td>
+                            <td><?= htmlspecialchars($row['fname']) ?></td>
+                            <td><?= htmlspecialchars($row['lname']) ?></td>
+                            <td><?= $row['marks'] ?></td>
+                            <td>Grade <?= $row['grade'] ?></td>
+                            <td>
+                                <button class='btn btn-warning btn-sm' data-bs-toggle='modal' data-bs-target='#editModal'
+                                        data-id='<?= $row['id'] ?>'
+                                        data-fname='<?= htmlspecialchars($row['fname']) ?>'
+                                        data-lname='<?= htmlspecialchars($row['lname']) ?>'
+                                        data-marks='<?= $row['marks'] ?>'
+                                        data-grade='<?= $row['grade'] ?>'>
+                                    Edit
+                                </button>
+                            </td>
+                            <td>
+                                <a href='delete.php?id=<?= $row['id'] ?>' class='btn btn-danger btn-sm' onclick='return confirm("Are you sure?")'>Delete</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No student records found.</td>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
 
+<!-- Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -130,11 +147,9 @@ $result = mysqli_query($conn, $sql);
                     <div class="mb-2">
                         <label>Grade Level:</label>
                         <select name="grade" id="edit-grade" class="form-select" required>
-                            <?php
-                            for ($i = 1; $i <= 12; $i++) {
-                                echo "<option value='$i'>Grade $i</option>";
-                            }
-                            ?>
+                            <?php for ($i = 1; $i <= 12; $i++) { ?>
+                                <option value="<?= $i ?>">Grade <?= $i ?></option>
+                            <?php } ?>
                         </select>
                     </div>
                 </div>
